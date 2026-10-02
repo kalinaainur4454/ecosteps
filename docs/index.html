@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EcoSteps — прототип</title>
+<style>
+  :root{
+    --green:#2E9E5B;
+    --green-light:#8AD36B;
+    --blue:#2BA8E0;
+    --blue-light:#DFF4FB;
+    --bg:#F6FBF8;
+    --text:#1F3A33;
+    --gold:#FFC94A;
+    --error:#E86A5C;
+    --card-radius:18px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Segoe UI', Verdana, sans-serif;
+    background:linear-gradient(135deg,#dff4fb,#eafbee);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-height:100vh;
+    padding:20px;
+    color:var(--text);
+  }
+  .phone{
+    width:390px;
+    height:820px;
+    background:var(--bg);
+    border-radius:40px;
+    box-shadow:0 20px 60px rgba(0,0,0,.25);
+    overflow:hidden;
+    position:relative;
+    border:8px solid #10221c;
+    display:flex;
+    flex-direction:column;
+  }
+  .statusbar{
+    height:28px;
+    background:#10221c;
+    color:#fff;
+    font-size:12px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 20px;
+  }
+  .screen{
+    flex:1;
+    overflow-y:auto;
+    padding:16px 16px 90px 16px;
+    display:none;
+    animation:fadeIn .25s ease;
+  }
+  .screen.active{display:block;}
+  @keyframes fadeIn{from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);}}
+
+  h1,h2,h3{margin:0 0 8px 0;}
+  h1{font-size:22px;}
+  h2{font-size:18px;}
+  h3{font-size:15px;}
+  p{line-height:1.4;}
+
+  .mascot{
+    width:70px; height:70px;
+    border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, var(--green-light), var(--green));
+    display:flex; align-items:center; justify-content:center;
+    font-size:34px;
+    box-shadow:0 6px 14px rgba(46,158,91,.4);
+  }
+
+  .btn{
+    display:block;
+    width:100%;
+    text-align:center;
+    padding:14px;
+    border-radius:16px;
+    border:none;
+    font-size:15px;
+    font-weight:600;
+    cursor:pointer;
+    margin-top:10px;
+    transition:transform .1s ease;
+  }
+  .btn:active{transform:scale(.97);}
+  .btn-primary{background:var(--green); color:#fff;}
+  .btn-secondary{background:var(--blue-light); color:var(--blue);}
+  .btn-outline{background:transparent; border:2px solid var(--green); color:var(--green);}
+  .btn-gold{background:var(--gold); color:#4a3200;}
+
+  input, select{
+    width:100%;
+    padding:12px 14px;
+    border-radius:14px;
+    border:1.5px solid #cfe9df;
+    margin-bottom:12px;
+    font-size:14px;
+    background:#fff;
+    color:var(--text);
+  }
+  label{font-size:12px; font-weight:600; color:#4a6b61; display:block; margin-bottom:4px;}
+
+  .card{
+    background:#fff;
+    border-radius:var(--card-radius);
+    padding:14px;
+    margin-bottom:12px;
+    box-shadow:0 2px 10px rgba(31,58,51,.06);
+  }
+  .progressbar{
+    height:10px;
+    background:#e3f3ea;
+    border-radius:8px;
+    overflow:hidden;
+    margin:6px 0;
+  }
+  .progressbar>div{
+    height:100%;
+    background:linear-gradient(90deg,var(--green),var(--green-light));
+    border-radius:8px;
+  }
+
+  .tag{
+    display:inline-block;
+    font-size:11px;
+    font-weight:700;
+    padding:3px 9px;
+    border-radius:20px;
+    margin-right:6px;
+  }
+  .tag-water{background:#DFF4FB; color:var(--blue);}
+  .tag-energy{background:#FFF3D6; color:#B8860B;}
+  .tag-recycle{background:#E3F6E9; color:var(--green);}
+  .tag-transport{background:#DFFBF7; color:#139E8A;}
+  .tag-nature{background:#EAF7D9; color:#5B8A1E;}
+  .tag-knowledge{background:#EDE3FB; color:#7A4FD1;}
+
+  .points-chip{
+    background:var(--gold);
+    color:#4a3200;
+    font-weight:700;
+    font-size:12px;
+    padding:4px 10px;
+    border-radius:20px;
+  }
+
+  .task-item{
+    display:flex;
+    gap:12px;
+    align-items:center;
+    background:#fff;
+    border-radius:16px;
+    padding:12px;
+    margin-bottom:10px;
+    box-shadow:0 2px 10px rgba(31,58,51,.06);
+    cursor:pointer;
+  }
+  .task-icon{
+    width:46px;height:46px;
+    border-radius:12px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:22px;
+    flex-shrink:0;
+  }
+
+  .filters{
+    display:flex;
+    gap:8px;
+    overflow-x:auto;
+    padding-bottom:10px;
+    margin-bottom:6px;
+  }
+  .filter-chip{
+    flex-shrink:0;
+    padding:8px 14px;
+    border-radius:20px;
+    background:#fff;
+    border:1.5px solid #dff0e7;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+    color:#4a6b61;
+  }
+  .filter-chip.active{background:var(--green); color:#fff; border-color:var(--green);}
+
+  .bottomnav{
+    position:absolute;
+    bottom:0; left:0; right:0;
+    height:72px;
+    background:#fff;
+    display:flex;
+    border-top:1px solid #e7f2ec;
+    box-shadow:0 -4px 14px rgba(0,0,0,.05);
+  }
+  .nav-item{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:3px;
+    font-size:11px;
+    color:#9fb3ac;
+    cursor:pointer;
+    font-weight:600;
+  }
+  .nav-item.active{color:var(--green);}
+  .nav-icon{font-size:20px;}
+
+  .leader-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 6px;
+    border-bottom:1px solid #f0f6f3;
+  }
+  .leader-rank{
+    width:26px; text-align:center; font-weight:700; color:#4a6b61;
+  }
+  .leader-avatar{
+    width:38px;height:38px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:18px; background:var(--blue-light);
+  }
+  .leader-row.me{background:var(--blue-light); border-radius:12px;}
+
+  .tabs{display:flex; gap:6px; margin-bottom:14px;}
+  .tab-btn{
+    flex:1;
+    text-align:center;
+    padding:9px;
+    border-radius:12px;
+    background:#fff;
+    border:1.5px solid #dff0e7;
+    font-size:12.5px;
+    font-weight:700;
+    color:#4a6b61;
+    cursor:pointer;
+  }
+  .tab-btn.active{background:var(--blue); color:#fff; border-color:var(--blue);}
+
+  .badge{
+    width:56px;height:56px;
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:26px;
+    margin:0 auto 6px auto;
+  }
+  .badge-locked{background:#eef2f0; filter:grayscale(1); opacity:.5;}
+  .badge-unlocked{background:radial-gradient(circle at 35% 30%, var(--gold), #e2a200);}
+
+  .achv-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; text-align:center;}
+  .achv-grid span{font-size:10px; color:#4a6b61; display:block;}
+
+  .top-header{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
+  .streak{
+    display:flex; align-items:center; gap:6px;
+    background:#fff; padding:6px 12px; border-radius:20px;
+    font-weight:700; font-size:13px; color:#d9822b;
+    box-shadow:0 2px 8px rgba(0,0,0,.05);
+  }
+
+  .map-placeholder{
+    height:220px;
+    border-radius:18px;
+    background:
+      linear-gradient(0deg, rgba(43,168,224,.15), rgba(43,168,224,.15)),
+      repeating-linear-gradient(45deg, #DFF4FB, #DFF4FB 14px, #cdeef9 14px, #cdeef9 28px);
+    position:relative;
+    margin-bottom:12px;
+    overflow:hidden;
+  }
+  .pin{
+    position:absolute;
+    width:26px;height:26px;
+    background:var(--green);
+    border-radius:50% 50% 50% 0;
+    transform:rotate(-45deg);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 2px 6px rgba(0,0,0,.3);
+  }
+  .pin span{transform:rotate(45deg); font-size:12px;}
+
+  .chat-bubble{
+    max-width:75%;
+    padding:10px 14px;
+    border-radius:16px;
+    margin-bottom:8px;
+    font-size:13.5px;
+  }
+  .chat-bubble.other{background:#fff; border-bottom-left-radius:4px;}
+  .chat-bubble.me{background:var(--green-light); margin-left:auto; border-bottom-right-radius:4px;}
+  .chat-author{font-size:10px; color:#4a6b61; margin-bottom:2px; font-weight:700;}
+
+  .back-btn{
+    background:none;border:none;font-size:20px;cursor:pointer;color:var(--text);
+    margin-bottom:8px;
+  }
+  .reward-screen{
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; height:100%; padding-top:60px;
+  }
+  .confetti{font-size:50px; margin-bottom:10px;}
+  .onboard-dots{display:flex; justify-content:center; gap:6px; margin:16px 0;}
+  .dot{width:8px;height:8px;border-radius:50%; background:#cfe9df;}
+  .dot.active{background:var(--green); width:20px; border-radius:4px;}
+
+  .switch-row{display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid #f0f6f3;}
+  .toggle{width:42px;height:24px;background:#dfeee6;border-radius:20px;position:relative;cursor:pointer;flex-shrink:0;}
+  .toggle.on{background:var(--green);}
+  .toggle::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:.2s;}
+  .toggle.on::after{left:21px;}
+
+  .muted{color:#6c8a81; font-size:12.5px;}
+  .fact-box{background:var(--blue-light); border-radius:14px; padding:12px; font-size:13px; color:#1b5c77; margin-top:10px;}
+
+  ::-webkit-scrollbar{width:0;}
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <div class="statusbar"><span>9:41</span><span>EcoSteps 🌱</span><span>100%</span></div>
+
+  <!-- ONBOARDING -->
+  <div class="screen active" id="screen-onboard">
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:90%;text-align:center;">
+      <div class="mascot" style="width:110px;height:110px;font-size:54px;">🌱</div>
+      <h1 style="margin-top:18px;">Привет! Я Росток</h1>
+      <p class="muted">Маленькие эко-привычки каждый день — большой вклад в планету. Выполняй задания, расти в уровнях и соревнуйся с друзьями!</p>
+      <div class="onboard-dots">
+        <div class="dot active"></div><div class="dot"></div><div class="dot"></div>
+      </div>
+      <button class="btn btn-primary" onclick="go('screen-register')">Начать</button>
+      <button class="btn btn-outline" onclick="go('screen-login')">У меня уже есть аккаунт</button>
+    </div>
+  </div>
+
+  <!-- REGISTER -->
+  <div class="screen" id="screen-register">
+    <button class="back-btn" onclick="go('screen-onboard')">←</button>
+    <h2>Регистрация ребёнка</h2>
+    <div class="progressbar"><div style="width:25%"></div></div>
+    <p class="muted" style="margin-top:6px;">Шаг 1 из 4 — о тебе</p>
+    <label>Имя (не отображается публично)</label>
+    <input type="text" placeholder="Например, Алия" value="Алия">
+    <label>Никнейм (виден всем)</label>
+    <input type="text" placeholder="EcoHero_01" value="GreenFox_07">
+    <label>Возраст</label>
+    <input type="number" placeholder="11" value="11">
+    <label>Город</label>
+    <select><option>Алматы</option><option>Астана</option><option>Шымкент</option></select>
+    <label>Школа</label>
+    <select><option>Школа-гимназия №12</option><option>Моей школы нет в списке</option></select>
+    <label>Класс</label>
+    <input type="text" placeholder="5 Б" value="5 Б">
+    <div class="card" style="background:var(--blue-light);">
+      <p style="margin:0;font-size:12.5px;">📩 Так как тебе меньше 14 лет, нужно подтверждение родителя. Мы отправим код на контакт родителя.</p>
+    </div>
+    <button class="btn btn-primary" onclick="go('screen-parent-consent')">Далее</button>
+  </div>
+
+  <div class="screen" id="screen-parent-consent">
+    <button class="back-btn" onclick="go('screen-register')">←</button>
+    <h2>Согласие родителя</h2>
+    <div class="progressbar"><div style="width:75%"></div></div>
+    <div class="card">
+      <h3>👨‍👩‍👧 Контакт родителя</h3>
+      <label>Телефон или email</label>
+      <input type="text" placeholder="+7 700 000 00 00">
+      <p class="muted">Мы отправим одноразовый код и простое согласие на обработку данных ребёнка.</p>
+    </div>
+    <div class="card">
+      <p style="font-size:12.5px;">✅ Я разрешаю обработку данных моего ребёнка согласно <b>политике конфиденциальности</b> и даю согласие на участие в приложении EcoSteps.</p>
+    </div>
+    <button class="btn btn-primary" onclick="go('screen-reward-welcome')">Подтвердить и войти</button>
+  </div>
+
+  <div class="screen" id="screen-login">
+    <button class="back-btn" onclick="go('screen-onboard')">←</button>
+    <h2>Вход</h2>
+    <label>Телефон или email родителя</label>
+    <input type="text" placeholder="+7 700 000 00 00">
+    <button class="btn btn-primary" onclick="go('screen-home')">Получить код</button>
+    <button class="btn btn-secondary" onclick="go('screen-home')">Войти по QR-коду</button>
+  </div>
+
+  <div class="screen" id="screen-reward-welcome">
+    <div class="reward-screen">
+      <div class="confetti">🎉🌿🎉</div>
+      <h1>Добро пожаловать!</h1>
+      <p class="muted">Ты получил(а) первые баллы и значок «Первый росток»</p>
+      <div class="points-chip" style="font-size:16px;padding:8px 18px;">+50 эко-баллов</div>
+      <button class="btn btn-primary" style="margin-top:30px;" onclick="go('screen-home')">Поехали!</button>
+    </div>
+  </div>
+
+  <!-- HOME -->
+  <div class="screen" id="screen-home">
+    <div class="top-header">
+      <div>
+        <p class="muted" style="margin:0;">Привет,</p>
+        <h2 style="margin:0;">GreenFox_07 🦊</h2>
+      </div>
+      <div class="streak">🔥 5 дней</div>
+    </div>
+
+    <div class="card" style="background:linear-gradient(135deg,var(--green),var(--green-light)); color:#fff;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <p style="margin:0;font-size:12px;opacity:.9;">Уровень 4</p>
+          <h3 style="color:#fff;margin:2px 0;">🌳 Дерево</h3>
+        </div>
+        <div class="points-chip">420 баллов</div>
+      </div>
+      <div class="progressbar" style="background:rgba(255,255,255,.3);margin-top:8px;"><div style="width:60%; background:#fff;"></div></div>
+      <p style="margin:4px 0 0 0;font-size:11px;">80 баллов до уровня «Хранитель леса»</p>
+    </div>
+
+    <h3>Задание дня</h3>
+    <div class="task-item" onclick="go('screen-task-detail')">
+      <div class="task-icon tag-water" style="background:var(--blue-light);">💧</div>
+      <div style="flex:1;">
+        <b>Закрой кран, пока чистишь зубы</b>
+        <div class="muted" style="font-size:12px;">Вода · Лёгкое</div>
+      </div>
+      <div class="points-chip">+15</div>
+    </div>
+
+    <h3>Рекомендуем</h3>
+    <div class="task-item" onclick="go('screen-task-detail')">
+      <div class="task-icon" style="background:#E3F6E9;">♻️</div>
+      <div style="flex:1;"><b>Рассортируй мусор</b><div class="muted" style="font-size:12px;">Переработка · Среднее</div></div>
+      <div class="points-chip">+30</div>
+    </div>
+    <div class="task-item" onclick="go('screen-task-detail')">
+      <div class="task-icon" style="background:#EAF7D9;">🌱</div>
+      <div style="flex:1;"><b>Посади растение</b><div class="muted" style="font-size:12px;">Природа · Сложное</div></div>
+      <div class="points-chip">+100</div>
+    </div>
+
+    <div class="card">
+      <h3>🏆 Твоя команда «Эко-Лисы»</h3>
+      <p class="muted" style="margin:4px 0;">Цель: собрать 50 кг макулатуры</p>
+      <div class="progressbar"><div style="width:68%"></div></div>
+      <p style="margin:4px 0 0;font-size:12px;">34 / 50 кг — осталось немного!</p>
+    </div>
+  </div>
+
+  <!-- TASKS CATALOG -->
+  <div class="screen" id="screen-tasks">
+    <h2>Задания</h2>
+    <div class="filters">
+      <div class="filter-chip active">Все</div>
+      <div class="filter-chip">💧 Вода</div>
+      <div class="filter-chip">⚡ Энергия</div>
+      <div class="filter-chip">♻️ Переработка</div>
+      <div class="filter-chip">🚌 Транспорт</div>
+      <div class="filter-chip">🛍️ Потребление</div>
+      <div class="filter-chip">🌱 Природа</div>
+      <div class="filter-chip">📚 Знания</div>
+    </div>
+
+    <div class="task-item" onclick="go('screen-task-detail')">
+      <div class="task-icon" style="background:var(--blue-light);">💧</div>
+      <div style="flex:1;"><b>Приняй быстрый душ</b><div class="muted" style="font-size:12px;">Вода · Лёгкое · ежедневно</div></div>
+      <div class="points-chip">+15</div>
+    </div>
+    <div class="task-item" onclick="go('screen-task-detail')">
+      <div class="task-icon" style="background:#FFF3D6;">⚡</div>
+      <div style="flex:1;"><b>Выключи свет в пустой комнате</b><div class="muted" style="font-size:12px;">Энергия · Лёгкое</div></div>
+      <div class="points-chip">+10</div>
+    </div>
+    <div class="task-item" onclick="go('screen-task-detail')">
+      <div class="task-icon" style="background:#E3F6E9;">♻️</div>
+      <div style="flex:1;"><b>Сдай вторсырьё в пункт приёма</b><div class="muted" style="font-size:12px;">Переработка · Среднее · QR</div></div>
+      <div class="points-chip">+50</div>
+    </div>
+    <div class="task-item" onclick="go('screen-task-detail')">
+      <div class="task-icon" style="background:#DFFBF7;">🚌</div>
+      <div style="flex:1;"><b>Пройди пешком вместо транспорта</b><div class="muted" style="font-size:12px;">Транспорт · Среднее · по шагам</div></div>
+      <div class="points-chip">+20-50</div>
+    </div>
+    <div class="task-item" onclick="go('screen-task-detail')">
+      <div class="task-icon" style="background:#EAF7D9;">🌱</div>
+      <div style="flex:1;"><b>Посади растение</b><div class="muted" style="font-size:12px;">Природа · Сложное · фото</div></div>
+      <div class="points-chip">+100</div>
+    </div>
+    <div class="task-item" onclick="go('screen-task-detail')">
+      <div class="task-icon" style="background:#EDE3FB;">📚</div>
+      <div style="flex:1;"><b>Пройди мини-квиз об экологии</b><div class="muted" style="font-size:12px;">Знания · Лёгкое</div></div>
+      <div class="points-chip">+10-30</div>
+    </div>
+    <div class="task-item" onclick="go('screen-task-detail')">
+      <div class="task-icon" style="background:#FFF0E8;">🤝</div>
+      <div style="flex:1;"><b>Участвуй в уборке двора</b><div class="muted" style="font-size:12px;">Сообщество · Командное</div></div>
+      <div class="points-chip">+100-200</div>
+    </div>
+  </div>
+
+  <!-- TASK DETAIL -->
+  <div class="screen" id="screen-task-detail">
+    <button class="back-btn" onclick="go('screen-tasks')">←</button>
+    <div style="font-size:70px;text-align:center;">🌱</div>
+    <h2 style="text-align:center;">Посади растение</h2>
+    <div style="text-align:center;margin-bottom:10px;">
+      <span class="tag tag-nature">Природа</span>
+      <span class="tag" style="background:#eee;color:#555;">Сложное</span>
+      <span class="tag" style="background:#eee;color:#555;">Индивидуальное</span>
+    </div>
+    <div class="card">
+      <p>Посади дерево, кустарник или комнатное растение и ухаживай за ним. Сфотографируй результат — наш модератор проверит выполнение.</p>
+      <p class="muted">Способ подтверждения: 📷 фото</p>
+      <p class="muted">Лимит: 1 раз в месяц</p>
+    </div>
+    <div class="card" style="display:flex;justify-content:space-between;align-items:center;">
+      <span>Награда</span>
+      <span class="points-chip" style="font-size:15px;">+100 баллов</span>
+    </div>
+    <button class="btn btn-primary" onclick="go('screen-task-submit')">Принять задание</button>
+  </div>
+
+  <div class="screen" id="screen-task-submit">
+    <button class="back-btn" onclick="go('screen-task-detail')">←</button>
+    <h2>Подтверди выполнение</h2>
+    <div class="card" style="text-align:center;">
+      <div style="font-size:50px;">📷</div>
+      <p class="muted">Загрузи фото посаженного растения</p>
+      <button class="btn btn-secondary">Сделать фото</button>
+    </div>
+    <div class="fact-box">🌍 Знаешь ли ты? Одно дерево за год поглощает до 22 кг CO₂ — столько же выделяет автомобиль за 100 км пути.</div>
+    <button class="btn btn-primary" onclick="go('screen-reward')">Отправить на проверку</button>
+  </div>
+
+  <div class="screen" id="screen-reward">
+    <div class="reward-screen">
+      <div class="confetti">🎉🌳🎉</div>
+      <h1>Отлично!</h1>
+      <p class="muted">Задание отправлено на проверку.<br>Баллы будут начислены после подтверждения.</p>
+      <div class="points-chip" style="font-size:16px;padding:8px 18px;">+100 баллов (ожидает)</div>
+      <button class="btn btn-primary" style="margin-top:30px;" onclick="go('screen-home')">На главную</button>
+    </div>
+  </div>
+
+  <!-- LEADERBOARD -->
+  <div class="screen" id="screen-leaderboard">
+    <h2>Рейтинг</h2>
+    <div class="tabs">
+      <div class="tab-btn active">Ученики</div>
+      <div class="tab-btn">Классы</div>
+      <div class="tab-btn">Школы</div>
+      <div class="tab-btn">Команды</div>
+    </div>
+    <div class="filters">
+      <div class="filter-chip active">День</div>
+      <div class="filter-chip">Месяц</div>
+      <div class="filter-chip">Всё время</div>
+    </div>
+    <div class="card">
+      <div class="leader-row"><div class="leader-rank">1</div><div class="leader-avatar">🦉</div><div style="flex:1;">NightOwl_21</div><b>890</b></div>
+      <div class="leader-row"><div class="leader-rank">2</div><div class="leader-avatar">🐢</div><div style="flex:1;">TurboTurtle</div><b>845</b></div>
+      <div class="leader-row"><div class="leader-rank">3</div><div class="leader-avatar">🦊</div><div style="flex:1;">GreenFox_07</div><b>420</b></div>
+      <div class="leader-row me"><div class="leader-rank">12</div><div class="leader-avatar">🦊</div><div style="flex:1;"><b>Ты</b></div><b>420</b></div>
+      <p class="muted" style="text-align:center;margin-top:6px;">До 11-го места не хватает 30 баллов 💪</p>
+    </div>
+    <div class="card">
+      <h3>🌍 Вклад класса 5Б</h3>
+      <p class="muted">Вместе посадили 12 растений, сэкономили ~340 л воды и 28 кг CO₂</p>
+    </div>
+  </div>
+
+  <!-- MAP -->
+  <div class="screen" id="screen-map">
+    <h2>Карта переработки</h2>
+    <div class="filters">
+      <div class="filter-chip active">Все</div>
+      <div class="filter-chip">Пластик</div>
+      <div class="filter-chip">Бумага</div>
+      <div class="filter-chip">Стекло</div>
+      <div class="filter-chip">Батарейки</div>
+    </div>
+    <div class="map-placeholder">
+      <div class="pin" style="top:40px;left:60px;"><span>♻️</span></div>
+      <div class="pin" style="top:100px;left:180px;"><span>🔋</span></div>
+      <div class="pin" style="top:150px;left:90px;"><span>📦</span></div>
+      <div class="pin" style="top:60px;left:260px;"><span>🍾</span></div>
+    </div>
+    <div class="card">
+      <h3>♻️ Пункт «ЭкоСбор Алматы»</h3>
+      <p class="muted">ул. Абая, 24 · Пн–Сб 9:00–19:00</p>
+      <p style="font-size:13px;">Принимают: пластик, бумага, стекло, металл</p>
+      <button class="btn btn-secondary">Построить маршрут</button>
+    </div>
+    <button class="btn btn-outline">+ Предложить новый пункт</button>
+  </div>
+
+  <!-- COMMUNITY (teams + chat) -->
+  <div class="screen" id="screen-community">
+    <h2>Сообщество</h2>
+    <div class="tabs">
+      <div class="tab-btn active">Моя команда</div>
+      <div class="tab-btn" onclick="go('screen-chat')">Чат</div>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div style="font-size:40px;">🦊</div>
+      <h3>Эко-Лисы</h3>
+      <p class="muted">8 участников · Школа №12</p>
+      <div class="progressbar"><div style="width:68%"></div></div>
+      <p style="font-size:12px;">Цель: собрать 50 кг макулатуры — 34/50 кг</p>
+    </div>
+    <h3>Участники</h3>
+    <div class="leader-row"><div class="leader-avatar">🦊</div><div style="flex:1;">GreenFox_07 (ты)</div><b>420</b></div>
+    <div class="leader-row"><div class="leader-avatar">🐸</div><div style="flex:1;">FrogJump</div><b>380</b></div>
+    <div class="leader-row"><div class="leader-avatar">🦔</div><div style="flex:1;">HedgeHero</div><b>310</b></div>
+    <button class="btn btn-outline" onclick="go('screen-chat')">Открыть чат команды</button>
+    <button class="btn btn-secondary">Пригласить друга</button>
+  </div>
+
+  <div class="screen" id="screen-chat">
+    <button class="back-btn" onclick="go('screen-community')">←</button>
+    <h2>Чат «Эко-Лисы»</h2>
+    <div class="chat-bubble other"><div class="chat-author">FrogJump</div>Привет! Кто ещё не сдал макулатуру? 📦</div>
+    <div class="chat-bubble me">Я сегодня отнесу!</div>
+    <div class="chat-bubble other"><div class="chat-author">HedgeHero</div>Класс 👍 осталось совсем чуть-чуть</div>
+    <div style="display:flex;gap:8px;margin-top:10px;">
+      <input type="text" placeholder="Быстрый ответ..." style="margin:0;">
+      <button class="btn btn-primary" style="width:auto;margin:0;padding:12px 16px;">➤</button>
+    </div>
+    <p class="muted" style="margin-top:8px;">🛡️ Чат модерируется. Личные сообщения отключены.</p>
+  </div>
+
+  <!-- PROFILE -->
+  <div class="screen" id="screen-profile">
+    <div style="text-align:center;">
+      <div class="mascot" style="margin:0 auto;">🦊</div>
+      <h2 style="margin-top:10px;">GreenFox_07</h2>
+      <p class="muted">Школа №12 · 5 Б класс</p>
+    </div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;">
+        <div><h3 style="margin:0;">420</h3><span class="muted">баллов</span></div>
+        <div><h3 style="margin:0;">4</h3><span class="muted">уровень</span></div>
+        <div><h3 style="margin:0;">28</h3><span class="muted">заданий</span></div>
+        <div><h3 style="margin:0;">🔥5</h3><span class="muted">серия</span></div>
+      </div>
+    </div>
+    <h3>Достижения</h3>
+    <div class="card">
+      <div class="achv-grid">
+        <div><div class="badge badge-unlocked">🌱</div><span>Первый шаг</span></div>
+        <div><div class="badge badge-unlocked">♻️</div><span>Эко-боец</span></div>
+        <div><div class="badge badge-unlocked">🔥</div><span>5 дней</span></div>
+        <div><div class="badge badge-locked">🏆</div><span>Чемпион</span></div>
+      </div>
+    </div>
+    <h3>Команды</h3>
+    <div class="task-item" onclick="go('screen-community')">
+      <div class="task-icon" style="background:#E3F6E9;">🦊</div>
+      <div style="flex:1;"><b>Эко-Лисы</b><div class="muted" style="font-size:12px;">8 участников</div></div>
+    </div>
+    <button class="btn btn-outline" onclick="go('screen-settings')">⚙️ Настройки</button>
+  </div>
+
+  <div class="screen" id="screen-settings">
+    <button class="back-btn" onclick="go('screen-profile')">←</button>
+    <h2>Настройки</h2>
+    <div class="card">
+      <div class="switch-row"><span>Push-уведомления</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+      <div class="switch-row"><span>Показывать в рейтинге</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+      <div class="switch-row"><span>Доступ к геолокации</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+      <div class="switch-row"><span>Чат команды</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+      <div class="switch-row" style="border:none;"><span>Тихие часы 21:00–08:00</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+    </div>
+    <div class="card">
+      <label>Язык</label>
+      <select><option>Русский</option><option>Қазақша</option><option>English</option></select>
+    </div>
+    <button class="btn btn-outline" style="border-color:var(--error); color:var(--error);">Удалить аккаунт</button>
+  </div>
+
+  <!-- PARENT DASHBOARD -->
+  <div class="screen" id="screen-parent">
+    <h2>Родительский кабинет</h2>
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="mascot" style="width:50px;height:50px;font-size:26px;">🦊</div>
+        <div><b>Алия (GreenFox_07)</b><div class="muted" style="font-size:12px;">Уровень 4 · 420 баллов</div></div>
+      </div>
+      <div class="progressbar"><div style="width:60%"></div></div>
+    </div>
+    <div class="card">
+      <h3>Ожидают подтверждения</h3>
+      <div class="task-item"><div class="task-icon" style="background:#EAF7D9;">🌱</div><div style="flex:1;"><b>Посадила растение</b><div class="muted" style="font-size:12px;">Фото приложено</div></div></div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-primary" style="margin:0;">Подтвердить</button>
+        <button class="btn btn-outline" style="margin:0;">Отклонить</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Еженедельный отчёт</h3>
+      <p class="muted">7 заданий выполнено, +310 баллов, сэкономлено ~120 л воды</p>
+    </div>
+    <h3>Приватность ребёнка</h3>
+    <div class="card">
+      <div class="switch-row"><span>Публичный рейтинг</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+      <div class="switch-row" style="border:none;"><span>Чат</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+    </div>
+  </div>
+
+  <!-- ADMIN PANEL (simplified web view inside frame) -->
+  <div class="screen" id="screen-admin">
+    <h2>Админ-панель (веб)</h2>
+    <div class="card"><h3>📊 Дашборд</h3>
+      <p class="muted">10 482 пользователя · DAU 2 940 · 50 школ подключено</p>
+    </div>
+    <div class="card"><h3>📝 Задания на модерации</h3>
+      <div class="task-item"><div class="task-icon" style="background:#EAF7D9;">🌱</div><div style="flex:1;"><b>Посадка растения — GreenFox_07</b></div></div>
+      <div style="display:flex;gap:8px;"><button class="btn btn-primary" style="margin:0;">Одобрить</button><button class="btn btn-outline" style="margin:0;">Отклонить</button></div>
+    </div>
+    <div class="card"><h3>💬 Жалобы в чате</h3><p class="muted">3 новые жалобы ожидают рассмотрения</p></div>
+    <div class="card"><h3>🏫 Заявки на школы</h3><p class="muted">2 новые заявки на добавление школы</p></div>
+  </div>
+
+  <div class="bottomnav" id="bottomnav">
+    <div class="nav-item active" data-target="screen-home" onclick="navTo('screen-home')"><span class="nav-icon">🏠</span>Главная</div>
+    <div class="nav-item" data-target="screen-tasks" onclick="navTo('screen-tasks')"><span class="nav-icon">📋</span>Задания</div>
+    <div class="nav-item" data-target="screen-leaderboard" onclick="navTo('screen-leaderboard')"><span class="nav-icon">🏆</span>Рейтинг</div>
+    <div class="nav-item" data-target="screen-map" onclick="navTo('screen-map')"><span class="nav-icon">🗺️</span>Карта</div>
+    <div class="nav-item" data-target="screen-profile" onclick="navTo('screen-profile')"><span class="nav-icon">👤</span>Профиль</div>
+  </div>
+</div>
+
+<div style="position:fixed; bottom:16px; left:16px; display:flex; flex-direction:column; gap:6px;">
+  <button onclick="go('screen-community')" style="padding:8px 12px;border-radius:10px;border:none;background:#2BA8E0;color:#fff;cursor:pointer;">🤝 Сообщество</button>
+  <button onclick="go('screen-parent')" style="padding:8px 12px;border-radius:10px;border:none;background:#2E9E5B;color:#fff;cursor:pointer;">👨‍👩‍👧 Кабинет родителя</button>
+  <button onclick="go('screen-admin')" style="padding:8px 12px;border-radius:10px;border:none;background:#1F3A33;color:#fff;cursor:pointer;">🛠️ Админ-панель</button>
+</div>
+
+<script>
+const navScreens = ['screen-home','screen-tasks','screen-leaderboard','screen-map','screen-profile'];
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.getElementById(id).scrollTop = 0;
+  const bottomnav = document.getElementById('bottomnav');
+  if(navScreens.includes(id)){
+    bottomnav.style.display='flex';
+    document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active', n.dataset.target===id));
+  } else {
+    bottomnav.style.display='none';
+  }
+}
+function navTo(id){ go(id); }
+go('screen-onboard');
+</script>
+
+</body>
+</html>
